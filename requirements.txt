@@ -4,3 +4,4 @@ openai
 matplotlib
 seaborn
 fpdf
+openai==0.28
