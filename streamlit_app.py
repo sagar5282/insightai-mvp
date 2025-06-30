@@ -59,30 +59,49 @@ if uploaded_file is not None:
         cat_cols = df.select_dtypes(include=['object']).columns.tolist()
 
         chart_type = st.selectbox("Choose chart type", ["Histogram", "Bar Plot", "Line Chart", "Pie Chart", "Scatter Plot"])
-        if chart_type in ["Histogram", "Line Chart", "Scatter Plot", "Pie Chart"]:
-            num_col = st.selectbox("Select numeric column", numeric_cols)
-        if chart_type in ["Bar Plot", "Line Chart", "Pie Chart"]:
-            cat_col = st.selectbox("Select categorical column", cat_cols)
-
-        fig, ax = plt.subplots()
 
         if chart_type == "Histogram":
-            sns.histplot(df[num_col], kde=True, ax=ax)
-        elif chart_type == "Bar Plot":
-            grouped = df.groupby(cat_col)[num_col].mean().reset_index()
-            sns.barplot(x=cat_col, y=num_col, data=grouped, ax=ax)
-        elif chart_type == "Line Chart":
-            grouped = df.groupby(cat_col)[num_col].mean().reset_index()
-            sns.lineplot(x=cat_col, y=num_col, data=grouped, marker="o", ax=ax)
-        elif chart_type == "Pie Chart":
-            grouped = df.groupby(cat_col)[num_col].sum()
-            ax.pie(grouped, labels=grouped.index, autopct="%1.1f%%")
-            ax.axis("equal")
-        elif chart_type == "Scatter Plot":
-            num_col2 = st.selectbox("Select second numeric column", numeric_cols)
-            sns.scatterplot(x=df[num_col], y=df[num_col2], ax=ax)
+            num_col = st.selectbox("Select numeric column", numeric_cols)
+            if num_col:
+                fig, ax = plt.subplots()
+                sns.histplot(df[num_col], kde=True, ax=ax)
+                st.pyplot(fig)
 
-        st.pyplot(fig)
+        elif chart_type == "Bar Plot":
+            cat_col = st.selectbox("Select categorical column", cat_cols)
+            num_col = st.selectbox("Select numeric column", numeric_cols)
+            if cat_col and num_col:
+                grouped = df.groupby(cat_col)[num_col].mean().reset_index()
+                fig, ax = plt.subplots()
+                sns.barplot(x=cat_col, y=num_col, data=grouped, ax=ax)
+                st.pyplot(fig)
+
+        elif chart_type == "Line Chart":
+            cat_col = st.selectbox("Select categorical column", cat_cols)
+            num_col = st.selectbox("Select numeric column", numeric_cols)
+            if cat_col and num_col:
+                grouped = df.groupby(cat_col)[num_col].mean().reset_index()
+                fig, ax = plt.subplots()
+                sns.lineplot(x=cat_col, y=num_col, data=grouped, marker="o", ax=ax)
+                st.pyplot(fig)
+
+        elif chart_type == "Pie Chart":
+            cat_col = st.selectbox("Select categorical column", cat_cols)
+            num_col = st.selectbox("Select numeric column", numeric_cols)
+            if cat_col and num_col:
+                grouped = df.groupby(cat_col)[num_col].sum()
+                fig, ax = plt.subplots()
+                ax.pie(grouped, labels=grouped.index, autopct="%1.1f%%")
+                ax.axis("equal")
+                st.pyplot(fig)
+
+        elif chart_type == "Scatter Plot":
+            num_col = st.selectbox("Select X-axis numeric column", numeric_cols)
+            num_col2 = st.selectbox("Select Y-axis numeric column", numeric_cols)
+            if num_col and num_col2:
+                fig, ax = plt.subplots()
+                sns.scatterplot(x=df[num_col], y=df[num_col2], ax=ax)
+                st.pyplot(fig)
 
     # --- Insights Tab ---
     with tabs[2]:
