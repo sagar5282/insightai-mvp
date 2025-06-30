@@ -1,17 +1,14 @@
 import streamlit as st
 import pandas as pd
-import openai
 import matplotlib.pyplot as plt
 import seaborn as sns
 from io import BytesIO
 from fpdf import FPDF
-import csv
-import datetime
 import os
 
 # Page settings
 st.set_page_config(
-    page_title="InsightAI - AI Business Analyst",
+    page_title="InsightAI - Business Data Analyst",
     page_icon="📊",
     layout="wide"
 )
@@ -30,11 +27,11 @@ st.markdown("""
         }
     </style>
     <div class='big-title'>📊 InsightAI – Your Smart Business Data Analyst</div>
-    <div class='subtitle'>Powered by GPT-4 • Built with Streamlit</div>
+    <div class='subtitle'>Built with Streamlit (No AI)</div>
     <hr style="margin-top:10px; margin-bottom:20px;">
 """, unsafe_allow_html=True)
 
-st.markdown("Upload your CSV or Excel file, explore insights, generate charts, download reports, and manage logs.")
+st.markdown("Upload your CSV or Excel file, explore insights, generate charts, and download reports.")
 
 # Upload file
 uploaded_file = st.file_uploader("Upload CSV or Excel", type=["csv", "xlsx"])
@@ -52,37 +49,6 @@ if uploaded_file is not None:
 
         st.subheader("📈 Summary Statistics")
         st.write(df.describe())
-
-        # Ask AI
-        st.subheader("💬 Ask InsightAI")
-        user_question = st.text_input("Ask a question about your data (e.g., Which region has highest sales?)")
-
-        if user_question:
-            openai.api_key = st.secrets["OPENAI_API_KEY"]
-            sample_data = df.head(10).to_string()
-            prompt = (
-                f"Dataset sample:\n{sample_data}\n\n"
-                f"User question: {user_question}\n\n"
-                "Please provide a detailed answer in simple business terms."
-            )
-            response = openai.ChatCompletion.create(
-                model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": "You are a skilled business data analyst."},
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            answer = response["choices"][0]["message"]["content"]
-            st.markdown("### 🤖 InsightAI Answer")
-            st.write(answer)
-
-            # 💾 Save to CSV log
-            log_filename = "insightai_logs.csv"
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-            with open(log_filename, mode="a", newline="", encoding="utf-8") as log_file:
-                writer = csv.writer(log_file)
-                writer.writerow([timestamp, user_question, answer])
 
         # Auto Chart Section
         st.subheader("📊 Auto Chart Builder")
@@ -108,8 +74,8 @@ if uploaded_file is not None:
         else:
             st.info("No numeric columns found to create charts.")
 
-        # PDF Report Download (fixed!)
-        st.subheader("📄 Download AI Insights Report")
+        # PDF Report Download (only stats)
+        st.subheader("📄 Download Data Report")
         if st.button("Generate & Download PDF Report"):
             pdf = FPDF()
             pdf.add_page()
@@ -118,11 +84,7 @@ if uploaded_file is not None:
             pdf.ln(10)
             pdf.set_font("Arial", "", 12)
             pdf.multi_cell(0, 10, f"Summary Statistics:\n{df.describe().to_string()}")
-            if user_question:
-                pdf.ln(5)
-                pdf.multi_cell(0, 10, f"User Question:\n{user_question}\n\nAI Answer:\n{answer}")
 
-            # Fix: Output as string and convert to BytesIO
             pdf_bytes = pdf.output(dest='S').encode('latin-1')
             buffer = BytesIO(pdf_bytes)
             st.download_button("Download Report PDF", buffer, file_name="InsightAI_Report.pdf", mime="application/pdf")
@@ -132,7 +94,7 @@ if uploaded_file is not None:
 else:
     st.info("Please upload a CSV or Excel file to get started.")
 
-# Download CSV log file
+# Download CSV log file (optional — can remove if not needed)
 st.subheader("⬇️ Download Logs CSV")
 if os.path.exists("insightai_logs.csv"):
     with open("insightai_logs.csv", "rb") as f:
@@ -143,7 +105,7 @@ if os.path.exists("insightai_logs.csv"):
             mime="text/csv"
         )
 else:
-    st.info("No log file yet. Logs will appear here after first question.")
+    st.info("No log file yet.")
 
 # Footer
 st.markdown("""
