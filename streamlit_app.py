@@ -7,8 +7,30 @@ from io import BytesIO
 from fpdf import FPDF
 
 # Page settings
-st.set_page_config(page_title="InsightAI – Your AI Business Analyst", layout="wide")
-st.title("🧠 InsightAI – Your AI Business Analyst")
+st.set_page_config(
+    page_title="InsightAI - AI Business Analyst",
+    page_icon="📊",
+    layout="wide"
+)
+
+# Custom header
+st.markdown("""
+    <style>
+        .big-title {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .subtitle {
+            font-size: 18px;
+            color: gray;
+        }
+    </style>
+    <div class='big-title'>📊 InsightAI – Your Smart Business Data Analyst</div>
+    <div class='subtitle'>Powered by GPT-4 • Built with Streamlit</div>
+    <hr style="margin-top:10px; margin-bottom:20px;">
+""", unsafe_allow_html=True)
+
 st.markdown("Upload your CSV or Excel file, explore insights, generate charts, and download reports.")
 
 # Upload file
@@ -98,3 +120,11 @@ if uploaded_file is not None:
         st.error(f"⚠️ Error reading file: {e}")
 else:
     st.info("Please upload a CSV or Excel file to get started.")
+
+# Footer
+st.markdown("""
+    <hr>
+    <center>
+    <span style="font-size:13px">Made with ❤️ by Sagar • GitHub: <a href="https://github.com/sagar5282" target="_blank">sagar5282</a></span>
+    </center>
+""", unsafe_allow_html=True)
