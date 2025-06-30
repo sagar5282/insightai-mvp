@@ -6,27 +6,6 @@ from io import BytesIO
 from fpdf import FPDF
 
 # --------------------
-# ✅ Authentication
-# --------------------
-def check_password():
-    def password_entered():
-        if st.session_state["password"] == "insight123":  # Change your password here
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]
-        else:
-            st.session_state["password_correct"] = False
-
-    if "password_correct" not in st.session_state:
-        st.text_input("Password", type="password", on_change=password_entered, key="password")
-        st.stop()
-    elif not st.session_state["password_correct"]:
-        st.text_input("Password", type="password", on_change=password_entered, key="password")
-        st.error("❌ Incorrect password")
-        st.stop()
-
-check_password()
-
-# --------------------
 # ✅ Page config & header
 # --------------------
 st.set_page_config(page_title="InsightAI - Business Data Analyst", page_icon="📊", layout="wide")
@@ -75,6 +54,8 @@ if uploaded_file is not None:
             st.metric("Total Sales", f"${total_sales:,.0f}")
             st.metric("Average Profit", f"${avg_profit:,.0f}")
             st.metric("Top Region", top_region)
+        else:
+            st.info("Upload data with columns: 'Sales', 'Profit', 'Region' for executive KPIs.")
 
     # --- Charts Tab ---
     with tabs[1]:
@@ -83,52 +64,64 @@ if uploaded_file is not None:
         numeric_cols = df.select_dtypes(include=['float', 'int']).columns.tolist()
         cat_cols = df.select_dtypes(include=['object']).columns.tolist()
 
-        chart_type = st.selectbox("Choose chart type", ["Histogram", "Bar Plot", "Line Chart", "Pie Chart", "Scatter Plot"])
+        if not numeric_cols:
+            st.warning("⚠️ No numeric columns found for plotting.")
+        else:
+            chart_type = st.selectbox("Choose chart type", ["Histogram", "Bar Plot", "Line Chart", "Pie Chart", "Scatter Plot"])
 
-        fig, ax = plt.subplots()
+            fig, ax = plt.subplots()
 
-        if chart_type == "Histogram":
-            num_col = st.selectbox("Select numeric column", numeric_cols)
-            if num_col:
-                sns.histplot(df[num_col], kde=True, ax=ax)
-                st.pyplot(fig)
+            if chart_type == "Histogram":
+                num_col = st.selectbox("Select numeric column", numeric_cols)
+                if num_col:
+                    sns.histplot(df[num_col], kde=True, ax=ax)
+                    st.pyplot(fig)
 
-        elif chart_type == "Bar Plot":
-            cat_col = st.selectbox("Select categorical column", cat_cols)
-            num_col = st.selectbox("Select numeric column", numeric_cols)
-            if cat_col and num_col:
-                grouped = df.groupby(cat_col)[num_col].mean().reset_index()
-                sns.barplot(x=cat_col, y=num_col, data=grouped, ax=ax)
-                st.pyplot(fig)
+            elif chart_type == "Bar Plot":
+                if cat_cols:
+                    cat_col = st.selectbox("Select categorical column", cat_cols)
+                    num_col = st.selectbox("Select numeric column", numeric_cols)
+                    if cat_col and num_col:
+                        grouped = df.groupby(cat_col)[num_col].mean().reset_index()
+                        sns.barplot(x=cat_col, y=num_col, data=grouped, ax=ax)
+                        st.pyplot(fig)
+                else:
+                    st.warning("⚠️ No categorical columns found for Bar Plot.")
 
-        elif chart_type == "Line Chart":
-            cat_col = st.selectbox("Select categorical column", cat_cols)
-            num_col = st.selectbox("Select numeric column", numeric_cols)
-            if cat_col and num_col:
-                grouped = df.groupby(cat_col)[num_col].mean().reset_index()
-                sns.lineplot(x=cat_col, y=num_col, data=grouped, marker="o", ax=ax)
-                st.pyplot(fig)
+            elif chart_type == "Line Chart":
+                if cat_cols:
+                    cat_col = st.selectbox("Select categorical column", cat_cols)
+                    num_col = st.selectbox("Select numeric column", numeric_cols)
+                    if cat_col and num_col:
+                        grouped = df.groupby(cat_col)[num_col].mean().reset_index()
+                        sns.lineplot(x=cat_col, y=num_col, data=grouped, marker="o", ax=ax)
+                        st.pyplot(fig)
+                else:
+                    st.warning("⚠️ No categorical columns found for Line Chart.")
 
-        elif chart_type == "Pie Chart":
-            cat_col = st.selectbox("Select categorical column", cat_cols)
-            num_col = st.selectbox("Select numeric column", numeric_cols)
-            if cat_col and num_col:
-                grouped = df.groupby(cat_col)[num_col].sum()
-                ax.pie(grouped, labels=grouped.index, autopct="%1.1f%%")
-                ax.axis("equal")
-                st.pyplot(fig)
+            elif chart_type == "Pie Chart":
+                if cat_cols:
+                    cat_col = st.selectbox("Select categorical column", cat_cols)
+                    num_col = st.selectbox("Select numeric column", numeric_cols)
+                    if cat_col and num_col:
+                        grouped = df.groupby(cat_col)[num_col].sum()
+                        ax.pie(grouped, labels=grouped.index, autopct="%1.1f%%")
+                        ax.axis("equal")
+                        st.pyplot(fig)
+                else:
+                    st.warning("⚠️ No categorical columns found for Pie Chart.")
 
-        elif chart_type == "Scatter Plot":
-            num_col = st.selectbox("Select X-axis numeric column", numeric_cols)
-            num_col2 = st.selectbox("Select Y-axis numeric column", numeric_cols)
-            if num_col and num_col2:
-                sns.scatterplot(x=df[num_col], y=df[num_col2], ax=ax)
-                st.pyplot(fig)
+            elif chart_type == "Scatter Plot":
+                num_col = st.selectbox("Select X-axis numeric column", numeric_cols)
+                num_col2 = st.selectbox("Select Y-axis numeric column", numeric_cols)
+                if num_col and num_col2:
+                    sns.scatterplot(x=df[num_col], y=df[num_col2], ax=ax)
+                    st.pyplot(fig)
 
-        # Chart download
-        img_buf = BytesIO()
-        fig.savefig(img_buf, format="png")
-        st.download_button("Download Chart as PNG", img_buf.getvalue(), file_name="chart.png", mime="image/png")
+            # Chart download
+            img_buf = BytesIO()
+            fig.savefig(img_buf, format="png")
+            st.download_button("Download Chart as PNG", img_buf.getvalue(), file_name="chart.png", mime="image/png")
 
     # --- Insights Tab ---
     with tabs[2]:
@@ -146,7 +139,7 @@ if uploaded_file is not None:
             top_profit_product = df.groupby("Product")["Profit"].mean().idxmax()
             st.write(f"✅ **Product with Highest Avg Profit:** {top_profit_product}")
 
-        st.info("Insights are auto-calculated from your uploaded data, no AI used.")
+        st.info("Insights are auto-calculated from your uploaded data.")
 
     # --- Report Tab ---
     with tabs[3]:
