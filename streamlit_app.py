@@ -7,6 +7,7 @@ from io import BytesIO
 from fpdf import FPDF
 import csv
 import datetime
+import os
 
 # Page settings
 st.set_page_config(
@@ -33,7 +34,7 @@ st.markdown("""
     <hr style="margin-top:10px; margin-bottom:20px;">
 """, unsafe_allow_html=True)
 
-st.markdown("Upload your CSV or Excel file, explore insights, generate charts, and download reports.")
+st.markdown("Upload your CSV or Excel file, explore insights, generate charts, download reports, and manage logs.")
 
 # Upload file
 uploaded_file = st.file_uploader("Upload CSV or Excel", type=["csv", "xlsx"])
@@ -130,6 +131,19 @@ if uploaded_file is not None:
         st.error(f"⚠️ Error reading file: {e}")
 else:
     st.info("Please upload a CSV or Excel file to get started.")
+
+# Download CSV log file
+st.subheader("⬇️ Download Logs CSV")
+if os.path.exists("insightai_logs.csv"):
+    with open("insightai_logs.csv", "rb") as f:
+        st.download_button(
+            label="Download Logs CSV",
+            data=f,
+            file_name="insightai_logs.csv",
+            mime="text/csv"
+        )
+else:
+    st.info("No log file yet. Logs will appear here after first question.")
 
 # Footer
 st.markdown("""
