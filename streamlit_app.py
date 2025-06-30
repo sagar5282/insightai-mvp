@@ -38,7 +38,7 @@ st.markdown("""
         .stTabs [data-baseweb="tab"] {font-size: 16px; padding: 10px;}
     </style>
     <div class='big-title'>📊 InsightAI – Your Smart Business Data Analyst</div>
-    <div class='subtitle'>Analyze your data visually and instantly (No AI)</div>
+    <div class='subtitle'>Visual analysis and insights (No AI)</div>
     <hr style="margin-top:10px; margin-bottom:20px;">
 """, unsafe_allow_html=True)
 
@@ -85,68 +85,50 @@ if uploaded_file is not None:
 
         chart_type = st.selectbox("Choose chart type", ["Histogram", "Bar Plot", "Line Chart", "Pie Chart", "Scatter Plot"])
 
+        fig, ax = plt.subplots()
+
         if chart_type == "Histogram":
             num_col = st.selectbox("Select numeric column", numeric_cols)
             if num_col:
-                fig, ax = plt.subplots()
                 sns.histplot(df[num_col], kde=True, ax=ax)
                 st.pyplot(fig)
-
-                img_buf = BytesIO()
-                fig.savefig(img_buf, format="png")
-                st.download_button("Download Chart as PNG", img_buf.getvalue(), file_name="chart.png", mime="image/png")
 
         elif chart_type == "Bar Plot":
             cat_col = st.selectbox("Select categorical column", cat_cols)
             num_col = st.selectbox("Select numeric column", numeric_cols)
             if cat_col and num_col:
                 grouped = df.groupby(cat_col)[num_col].mean().reset_index()
-                fig, ax = plt.subplots()
                 sns.barplot(x=cat_col, y=num_col, data=grouped, ax=ax)
                 st.pyplot(fig)
-
-                img_buf = BytesIO()
-                fig.savefig(img_buf, format="png")
-                st.download_button("Download Chart as PNG", img_buf.getvalue(), file_name="chart.png", mime="image/png")
 
         elif chart_type == "Line Chart":
             cat_col = st.selectbox("Select categorical column", cat_cols)
             num_col = st.selectbox("Select numeric column", numeric_cols)
             if cat_col and num_col:
                 grouped = df.groupby(cat_col)[num_col].mean().reset_index()
-                fig, ax = plt.subplots()
                 sns.lineplot(x=cat_col, y=num_col, data=grouped, marker="o", ax=ax)
                 st.pyplot(fig)
-
-                img_buf = BytesIO()
-                fig.savefig(img_buf, format="png")
-                st.download_button("Download Chart as PNG", img_buf.getvalue(), file_name="chart.png", mime="image/png")
 
         elif chart_type == "Pie Chart":
             cat_col = st.selectbox("Select categorical column", cat_cols)
             num_col = st.selectbox("Select numeric column", numeric_cols)
             if cat_col and num_col:
                 grouped = df.groupby(cat_col)[num_col].sum()
-                fig, ax = plt.subplots()
                 ax.pie(grouped, labels=grouped.index, autopct="%1.1f%%")
                 ax.axis("equal")
                 st.pyplot(fig)
-
-                img_buf = BytesIO()
-                fig.savefig(img_buf, format="png")
-                st.download_button("Download Chart as PNG", img_buf.getvalue(), file_name="chart.png", mime="image/png")
 
         elif chart_type == "Scatter Plot":
             num_col = st.selectbox("Select X-axis numeric column", numeric_cols)
             num_col2 = st.selectbox("Select Y-axis numeric column", numeric_cols)
             if num_col and num_col2:
-                fig, ax = plt.subplots()
                 sns.scatterplot(x=df[num_col], y=df[num_col2], ax=ax)
                 st.pyplot(fig)
 
-                img_buf = BytesIO()
-                fig.savefig(img_buf, format="png")
-                st.download_button("Download Chart as PNG", img_buf.getvalue(), file_name="chart.png", mime="image/png")
+        # Chart download
+        img_buf = BytesIO()
+        fig.savefig(img_buf, format="png")
+        st.download_button("Download Chart as PNG", img_buf.getvalue(), file_name="chart.png", mime="image/png")
 
     # --- Insights Tab ---
     with tabs[2]:
@@ -164,7 +146,7 @@ if uploaded_file is not None:
             top_profit_product = df.groupby("Product")["Profit"].mean().idxmax()
             st.write(f"✅ **Product with Highest Avg Profit:** {top_profit_product}")
 
-        st.info("These insights are auto-calculated using simple grouping and aggregations, no AI used.")
+        st.info("Insights are auto-calculated from your uploaded data, no AI used.")
 
     # --- Report Tab ---
     with tabs[3]:
@@ -183,7 +165,7 @@ if uploaded_file is not None:
             buffer = BytesIO(pdf_bytes)
             st.download_button("Download Report PDF", buffer, file_name="InsightAI_Report.pdf", mime="application/pdf")
 else:
-    st.info("👈 Please upload a CSV or Excel file to get started from the sidebar.")
+    st.info("👈 Please upload a CSV or Excel file from the sidebar to get started.")
 
 # Footer
 st.markdown("""
