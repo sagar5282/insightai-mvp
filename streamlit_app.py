@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from io import BytesIO
 from fpdf import FPDF
+import csv
+import datetime
 
 # Page settings
 st.set_page_config(
@@ -72,6 +74,14 @@ if uploaded_file is not None:
             answer = response["choices"][0]["message"]["content"]
             st.markdown("### 🤖 InsightAI Answer")
             st.write(answer)
+
+            # 💾 Save to CSV log
+            log_filename = "insightai_logs.csv"
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            with open(log_filename, mode="a", newline="", encoding="utf-8") as log_file:
+                writer = csv.writer(log_file)
+                writer.writerow([timestamp, user_question, answer])
 
         # Auto Chart Section
         st.subheader("📊 Auto Chart Builder")
