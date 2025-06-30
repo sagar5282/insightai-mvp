@@ -1,4 +1,6 @@
 streamlit
 pandas
 openai
-openpyxl
+matplotlib
+seaborn
+fpdf
