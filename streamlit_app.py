@@ -108,7 +108,7 @@ if uploaded_file is not None:
         else:
             st.info("No numeric columns found to create charts.")
 
-        # PDF Report Download
+        # PDF Report Download (fixed!)
         st.subheader("📄 Download AI Insights Report")
         if st.button("Generate & Download PDF Report"):
             pdf = FPDF()
@@ -122,9 +122,9 @@ if uploaded_file is not None:
                 pdf.ln(5)
                 pdf.multi_cell(0, 10, f"User Question:\n{user_question}\n\nAI Answer:\n{answer}")
 
-            buffer = BytesIO()
-            pdf.output(buffer)
-            buffer.seek(0)
+            # Fix: Output as string and convert to BytesIO
+            pdf_bytes = pdf.output(dest='S').encode('latin-1')
+            buffer = BytesIO(pdf_bytes)
             st.download_button("Download Report PDF", buffer, file_name="InsightAI_Report.pdf", mime="application/pdf")
 
     except Exception as e:
