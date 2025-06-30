@@ -1,7 +1,6 @@
 streamlit
 pandas
-openai
+openai==0.28
 matplotlib
 seaborn
 fpdf
-openai==0.28
