@@ -5,32 +5,46 @@ import seaborn as sns
 from io import BytesIO
 from fpdf import FPDF
 
-# Page config
+# --------------------
+# ✅ Authentication
+# --------------------
+def check_password():
+    def password_entered():
+        if st.session_state["password"] == "insight123":  # Change your password here
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]
+        else:
+            st.session_state["password_correct"] = False
+
+    if "password_correct" not in st.session_state:
+        st.text_input("Password", type="password", on_change=password_entered, key="password")
+        st.stop()
+    elif not st.session_state["password_correct"]:
+        st.text_input("Password", type="password", on_change=password_entered, key="password")
+        st.error("❌ Incorrect password")
+        st.stop()
+
+check_password()
+
+# --------------------
+# ✅ Page config & header
+# --------------------
 st.set_page_config(page_title="InsightAI - Business Data Analyst", page_icon="📊", layout="wide")
 
-# Custom header
 st.markdown("""
     <style>
-        .big-title {
-            font-size: 36px;
-            font-weight: bold;
-            color: #ff6f61;
-        }
-        .subtitle {
-            font-size: 18px;
-            color: gray;
-        }
-        .stTabs [data-baseweb="tab"] {
-            font-size: 16px;
-            padding: 10px;
-        }
+        .big-title {font-size: 36px; font-weight: bold; color: #ff6f61;}
+        .subtitle {font-size: 18px; color: gray;}
+        .stTabs [data-baseweb="tab"] {font-size: 16px; padding: 10px;}
     </style>
     <div class='big-title'>📊 InsightAI – Your Smart Business Data Analyst</div>
     <div class='subtitle'>Analyze your data visually and instantly (No AI)</div>
     <hr style="margin-top:10px; margin-bottom:20px;">
 """, unsafe_allow_html=True)
 
-# Upload data
+# --------------------
+# ✅ Upload data
+# --------------------
 uploaded_file = st.sidebar.file_uploader("Upload CSV or Excel", type=["csv", "xlsx"])
 if uploaded_file is not None:
     if uploaded_file.name.endswith(".csv"):
@@ -51,6 +65,17 @@ if uploaded_file is not None:
         st.subheader("📈 Summary Statistics")
         st.write(df.describe())
 
+        # KPI dashboard
+        st.subheader("📊 Executive Dashboard")
+        if "Sales" in df.columns and "Profit" in df.columns and "Region" in df.columns:
+            total_sales = df["Sales"].sum()
+            avg_profit = df["Profit"].mean()
+            top_region = df.groupby("Region")["Sales"].sum().idxmax()
+
+            st.metric("Total Sales", f"${total_sales:,.0f}")
+            st.metric("Average Profit", f"${avg_profit:,.0f}")
+            st.metric("Top Region", top_region)
+
     # --- Charts Tab ---
     with tabs[1]:
         st.subheader("📊 Advanced Charts")
@@ -67,6 +92,10 @@ if uploaded_file is not None:
                 sns.histplot(df[num_col], kde=True, ax=ax)
                 st.pyplot(fig)
 
+                img_buf = BytesIO()
+                fig.savefig(img_buf, format="png")
+                st.download_button("Download Chart as PNG", img_buf.getvalue(), file_name="chart.png", mime="image/png")
+
         elif chart_type == "Bar Plot":
             cat_col = st.selectbox("Select categorical column", cat_cols)
             num_col = st.selectbox("Select numeric column", numeric_cols)
@@ -76,6 +105,10 @@ if uploaded_file is not None:
                 sns.barplot(x=cat_col, y=num_col, data=grouped, ax=ax)
                 st.pyplot(fig)
 
+                img_buf = BytesIO()
+                fig.savefig(img_buf, format="png")
+                st.download_button("Download Chart as PNG", img_buf.getvalue(), file_name="chart.png", mime="image/png")
+
         elif chart_type == "Line Chart":
             cat_col = st.selectbox("Select categorical column", cat_cols)
             num_col = st.selectbox("Select numeric column", numeric_cols)
@@ -84,6 +117,10 @@ if uploaded_file is not None:
                 fig, ax = plt.subplots()
                 sns.lineplot(x=cat_col, y=num_col, data=grouped, marker="o", ax=ax)
                 st.pyplot(fig)
+
+                img_buf = BytesIO()
+                fig.savefig(img_buf, format="png")
+                st.download_button("Download Chart as PNG", img_buf.getvalue(), file_name="chart.png", mime="image/png")
 
         elif chart_type == "Pie Chart":
             cat_col = st.selectbox("Select categorical column", cat_cols)
@@ -95,6 +132,10 @@ if uploaded_file is not None:
                 ax.axis("equal")
                 st.pyplot(fig)
 
+                img_buf = BytesIO()
+                fig.savefig(img_buf, format="png")
+                st.download_button("Download Chart as PNG", img_buf.getvalue(), file_name="chart.png", mime="image/png")
+
         elif chart_type == "Scatter Plot":
             num_col = st.selectbox("Select X-axis numeric column", numeric_cols)
             num_col2 = st.selectbox("Select Y-axis numeric column", numeric_cols)
@@ -102,6 +143,10 @@ if uploaded_file is not None:
                 fig, ax = plt.subplots()
                 sns.scatterplot(x=df[num_col], y=df[num_col2], ax=ax)
                 st.pyplot(fig)
+
+                img_buf = BytesIO()
+                fig.savefig(img_buf, format="png")
+                st.download_button("Download Chart as PNG", img_buf.getvalue(), file_name="chart.png", mime="image/png")
 
     # --- Insights Tab ---
     with tabs[2]:
